@@ -18,27 +18,27 @@ unit_tests:
     given:
       - input: ref('stg_supplies')
         rows:
-          - {product_id: 1, supply_cost: 4.50, supply_uuid: 'a', is_perishable_supply: true, supply_id: 1, supply_name: 'a'}
-          - {product_id: 2, supply_cost: 3.50, supply_uuid: 'b', is_perishable_supply: false, supply_id: 2, supply_name: 'b'}
-          - {product_id: 2, supply_cost: 5.00, supply_uuid: 'c', is_perishable_supply: true, supply_id: 3, supply_name: 'c'}
+          - { product_id: 1, supply_cost: 4.50 }
+          - { product_id: 2, supply_cost: 3.50 }
+          - { product_id: 2, supply_cost: 5.00 }
       - input: ref('stg_products')
         rows:
-          - {product_id: 1, product_name: 'a', product_type: 'b', product_description: 'c', product_price: 1.00, is_food_item: 1, is_drink_item: 0}
-          - {product_id: 2, product_name: 'a', product_type: 'b', product_description: 'c', product_price: 1.00, is_food_item: 0, is_drink_item: 1}
+          - { product_id: 1 }
+          - { product_id: 2 }
       - input: ref('stg_order_items')
         rows:
-          - {order_id: 1, product_id: 1, order_item_id: '1'}
-          - {order_id: 2, product_id: 2, order_item_id: '2'}
-          - {order_id: 2, product_id: 2, order_item_id: '3'}
+          - { order_id: 1, product_id: 1 }
+          - { order_id: 2, product_id: 2 }
+          - { order_id: 2, product_id: 2 }
       - input: ref('stg_orders')
         rows:
-          - {order_id: 1, location_id: 1, customer_id: 'a', subtotal_cents: 100, tax_paid_cents: 10, order_total_cents: 110, subtotal: 1.00, tax_paid: 0.10, order_total: 1.10, ordered_at: '2022-01-01'}
-          - {order_id: 2, location_id: 2, customer_id: 'b', subtotal_cents: 200, tax_paid_cents: 20, order_total_cents: 220, subtotal: 2.00, tax_paid: 0.20, order_total: 2.20, ordered_at: '2022-01-02'}
+          - { order_id: 1 }
+          - { order_id: 2 }
     expect:
       rows:
-        - {order_items_order_item_id: 1, order_items_product_id: 1, supply_cost: 4.50}
-        - {order_items_order_item_id: 2, order_items_product_id: 2, supply_cost: 8.50}
-        - {order_items_order_item_id: 3, order_items_product_id: 2, supply_cost: 8.50}
+        - { order_items_order_id: 1, order_items_product_id: 1, supply_cost: 4.50 }
+        - { order_items_order_id: 2, order_items_product_id: 2, supply_cost: 8.50 }
+        - { order_items_order_id: 2, order_items_product_id: 2, supply_cost: 8.50 }
 
 semantic_models:
   - name: order_item

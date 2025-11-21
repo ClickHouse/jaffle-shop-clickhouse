@@ -39,13 +39,28 @@ unit_tests:
     given:
       - input: ref('order_items')
         rows:
-          - {order_items_order_id: 1, order_items_order_item_id: 1, order_items_product_id: 1, ordered_at: '2022-01-01', product_name: 'a', product_price: 1.00, is_drink_item: false, is_food_item: true, supply_cost: 1.00}
-          - {order_items_order_id: 1, order_items_order_item_id: 2, order_items_product_id: 2, ordered_at: '2022-01-01', product_name: 'b', product_price: 2.00, is_drink_item: true, is_food_item: false, supply_cost: 2.00}
-          - {order_items_order_id: 2, order_items_order_item_id: 3, order_items_product_id: 3, ordered_at: '2022-01-02', product_name: 'c', product_price: 3.00, is_drink_item: false, is_food_item: true, supply_cost: 3.00}
+          - {
+              order_items_order_id: 1,
+              order_items_order_item_id: 1,
+              is_drink_item: false,
+              is_food_item: true,
+            }
+          - {
+              order_items_order_id: 1,
+              order_items_order_item_id: 2,
+              is_drink_item: true,
+              is_food_item: false,
+            }
+          - {
+              order_items_order_id: 2,
+              order_items_order_item_id: 3,
+              is_drink_item: false,
+              is_food_item: true,
+            }
       - input: ref('stg_orders')
         rows:
-          - {order_id: 1, location_id: 1, customer_id: 'a', subtotal_cents: 100, tax_paid_cents: 10, order_total_cents: 110, subtotal: 1.00, tax_paid: 0.10, order_total: 1.10, ordered_at: '2022-01-01'}
-          - {order_id: 2, location_id: 2, customer_id: 'b', subtotal_cents: 200, tax_paid_cents: 20, order_total_cents: 220, subtotal: 2.00, tax_paid: 0.20, order_total: 2.20, ordered_at: '2022-01-02'}
+          - { order_id: 1 }
+          - { order_id: 2 }
     expect:
       rows:
         - {order_id: 1, count_food_items: 1, count_drink_items: 1, is_drink_order: true, is_food_order: true}
