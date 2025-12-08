@@ -40,20 +40,20 @@ unit_tests:
       - input: ref('order_items')
         rows:
           - {
-              order_items_order_id: 1,
-              order_items_order_item_id: 1,
+              order_id: 1,
+              order_item_id: 1,
               is_drink_item: false,
               is_food_item: true,
             }
           - {
-              order_items_order_id: 1,
-              order_items_order_item_id: 2,
+              order_id: 1,
+              order_item_id: 2,
               is_drink_item: true,
               is_food_item: false,
             }
           - {
-              order_items_order_id: 2,
-              order_items_order_item_id: 3,
+              order_id: 2,
+              order_item_id: 3,
               is_drink_item: false,
               is_food_item: true,
             }
@@ -74,7 +74,7 @@ semantic_models:
       Order fact table. This table is at the order grain with one row per order.
     model: ref('orders')
     entities:
-      - name: order_items_order_id
+      - name: order_id
         type: primary
       - name: location
         type: foreign

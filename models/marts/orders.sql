@@ -15,11 +15,11 @@ order_items as (
 order_items_summary as (
 
     select
-        order_items_order_id,
+        order_id,
 
         sum(supply_cost) as order_cost,
         sum(product_price) as order_items_subtotal,
-        count(order_items_order_item_id) as count_order_items,
+        count(order_item_id) as count_order_items,
         sum(
             case
                 when is_food_item then 1
@@ -56,7 +56,7 @@ compute_booleans as (
 
     left join
         order_items_summary
-        on orders.order_id = order_items_summary.order_items_order_id
+        on orders.order_id = order_items_summary.order_id
 
 ),
 

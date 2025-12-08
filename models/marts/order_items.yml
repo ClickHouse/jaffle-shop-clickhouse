@@ -1,11 +1,11 @@
 models:
   - name: order_items
     columns:
-      - name: order_items_order_item_id
+      - name: order_item_id
         data_tests:
           - not_null
           - unique
-      - name: order_items_order_id
+      - name: order_id
         data_tests:
           - relationships:
               arguments:
@@ -36,9 +36,9 @@ unit_tests:
           - { order_id: 2 }
     expect:
       rows:
-        - { order_items_order_id: 1, order_items_product_id: 1, supply_cost: 4.50 }
-        - { order_items_order_id: 2, order_items_product_id: 2, supply_cost: 8.50 }
-        - { order_items_order_id: 2, order_items_product_id: 2, supply_cost: 8.50 }
+        - { order_id: 1, product_id: 1, supply_cost: 4.50 }
+        - { order_id: 2, product_id: 2, supply_cost: 8.50 }
+        - { order_id: 2, product_id: 2, supply_cost: 8.50 }
 
 semantic_models:
   - name: order_item

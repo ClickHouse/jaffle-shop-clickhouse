@@ -41,9 +41,9 @@ order_supplies_summary as (
 joined as (
 
     select
-        order_items.order_item_id as order_items_order_item_id,
-        order_items.order_id as order_items_order_id,
-        order_items.product_id as order_items_product_id,
+        order_items.order_item_id as order_item_id,
+        order_items.order_id as order_id,
+        order_items.product_id as product_id,
 
         orders.ordered_at,
 
