@@ -1,0 +1,135 @@
+name: dbt CI / CD
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+env:
+  DBT_PROFILES_DIR: .
+
+jobs:
+  # Runs on merge to main — builds everything and uploads the manifest
+  # so PRs can use it for state comparison.
+  production:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: prod
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dbt
+        run: pip install dbt-clickhouse
+
+      - name: Install dbt packages
+        run: dbt deps
+        env:
+          CH_SCHEMA: ${{ secrets.CH_SCHEMA }}
+          CH_HOST: ${{ secrets.CH_HOST }}
+          CH_PORT: ${{ secrets.CH_PORT }}
+          CH_USER: ${{ secrets.CH_USER }}
+          CH_PASSWORD: ${{ secrets.CH_PASSWORD }}
+
+      - name: dbt run
+        run: dbt run --target prod
+        env:
+          CH_SCHEMA: ${{ secrets.CH_SCHEMA }}
+          CH_HOST: ${{ secrets.CH_HOST }}
+          CH_PORT: ${{ secrets.CH_PORT }}
+          CH_USER: ${{ secrets.CH_USER }}
+          CH_PASSWORD: ${{ secrets.CH_PASSWORD }}
+
+      - name: Upload production manifest
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-manifest
+          path: target/manifest.json
+          retention-days: 90
+
+  # Runs on PRs — downloads the production manifest and builds only
+  # modified models and their downstream dependencies.
+  pr:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    environment: ci
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          #cache: pip
+
+      - name: Install dbt
+        run: pip install dbt-clickhouse
+
+      - name: Install dbt packages
+        run: dbt deps
+        env:
+          CH_SCHEMA: ${{ secrets.CH_SCHEMA_PR }}
+          CH_HOST: ${{ secrets.CH_HOST }}
+          CH_PORT: ${{ secrets.CH_PORT }}
+          CH_USER: ${{ secrets.CH_USER }}
+          CH_PASSWORD: ${{ secrets.CH_PASSWORD }}
+
+      - name: Download production manifest
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          RUN_ID=$(gh run list \
+            --repo "$GITHUB_REPOSITORY" \
+            --workflow=dbt-ci.yml \
+            --branch=main \
+            --status=success \
+            --limit=1 \
+            --json databaseId \
+            --jq '.[0].databaseId // empty')
+          if [ -n "$RUN_ID" ]; then
+            gh run download "$RUN_ID" \
+              --repo "$GITHUB_REPOSITORY" \
+              --name production-manifest \
+              --dir prod-manifest/
+          echo "Production manifest downloaded successfully from run $RUN_ID."
+          else
+            echo "No successful production run found, will fall back to full build."
+          fi
+        # If no production manifest exists yet (first run), this step will
+        # fail gracefully and the next step falls back to a full build.
+        continue-on-error: true
+      
+      - name: dbt ls (modified models + descendants)
+        run: |
+          if [ -f prod-manifest/manifest.json ]; then
+            dbt ls --select state:modified+ --defer --state prod-manifest/ --target ci
+          fi
+        env:
+          CH_SCHEMA: ${{ secrets.CH_SCHEMA_PR }}
+          CH_HOST: ${{ secrets.CH_HOST }}
+          CH_PORT: ${{ secrets.CH_PORT }}
+          CH_USER: ${{ secrets.CH_USER }}
+          CH_PASSWORD: ${{ secrets.CH_PASSWORD }}
+
+      - name: dbt build (modified models + descendants)
+        run: |
+          if [ -f prod-manifest/manifest.json ]; then
+            dbt build --select state:modified+ --defer --state prod-manifest/ --target ci
+          else
+            echo "No production manifest found, running full build."
+            dbt build
+          fi
+        env:
+          CH_SCHEMA: ${{ secrets.CH_SCHEMA_PR }}
+          CH_HOST: ${{ secrets.CH_HOST }}
+          CH_PORT: ${{ secrets.CH_PORT }}
+          CH_USER: ${{ secrets.CH_USER }}
+          CH_PASSWORD: ${{ secrets.CH_PASSWORD }}
