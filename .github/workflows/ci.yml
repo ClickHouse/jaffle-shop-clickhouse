@@ -1,0 +1,99 @@
+# =============================================================================
+# ILLUSTRATIVE EXAMPLE ONLY — NOT INTENDED TO RUN AS-IS
+# =============================================================================
+# This workflow demonstrates a CI pattern for dbt + ClickHouse using slim CI
+# (--defer --state) to build only models changed relative to the last
+# production run. It is provided as a starting point; you must configure the
+# environment variables and secrets listed below before using it in production.
+#
+# REQUIRED GITHUB SECRETS (Settings → Secrets and variables → Actions):
+#   DBT_HOST      — ClickHouse host (e.g. abc123.clickhouse.cloud)
+#   DBT_USER      — ClickHouse username
+#   DBT_PASSWORD  — ClickHouse password
+#
+# OPTIONAL SECRETS / VARIABLES:
+#   DBT_SCHEMA    — Target schema for CI runs (default: jaffle_shop_ci)
+#   DBT_CLUSTER   — ClickHouse cluster name, if applicable
+#
+# HOW SLIM CI WORKS HERE:
+#   1. The CD workflow (cd_prod.yml) uploads manifest.json after every prod run.
+#   2. This workflow downloads that artifact as the baseline state.
+#   3. dbt compares the current branch against that baseline and only builds
+#      models that are new or modified (state:modified+), deferring resolution
+#      of unchanged models to whatever already exists in the CI schema.
+#   4. On the very first run (no artifact yet), the download step is skipped
+#      and dbt builds all models.
+# =============================================================================
+
+name: dbt CI Job
+
+# To auto-run on PRs, replace this block with:
+#   on:
+#     pull_request:
+#       branches:
+#         - main
+on:
+  workflow_dispatch:
+
+jobs:
+  run_clickhouse:
+    name: dbt Run CI Tests
+    runs-on: ubuntu-latest
+
+    env:
+      DBT_HOST: ${{ secrets.DBT_HOST }}
+      DBT_USER: ${{ secrets.DBT_USER }}
+      DBT_PASSWORD: ${{ secrets.DBT_PASSWORD }}
+      DBT_SCHEMA: ${{ vars.DBT_SCHEMA || 'jaffle_shop_ci' }}
+
+    steps:
+      - uses: "actions/checkout@v4"
+      - uses: "actions/setup-python@v5"
+        with:
+          python-version: "3.12"
+      - name: Install uv
+        run: python3 -m pip install uv
+      - name: Install python dependencies
+        run: uv pip install -r requirements.txt --system
+      - name: Install dbt-clickhouse
+        run: uv pip install dbt-clickhouse
+      - name: Install dbt package dependencies
+        run: uv run dbt deps
+
+      # Download the manifest from the last successful prod run to use as the
+      # slim CI baseline. continue-on-error handles the bootstrap case where
+      # no artifact exists yet (e.g. first run).
+      - name: Download production manifest
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          RUN_ID=$(gh run list \
+            --repo "$GITHUB_REPOSITORY" \
+            --workflow=dbt-ci.yml \
+            --branch=main \
+            --status=success \
+            --limit=1 \
+            --json databaseId \
+            --jq '.[0].databaseId // empty')
+          if [ -n "$RUN_ID" ]; then
+            gh run download "$RUN_ID" \
+              --repo "$GITHUB_REPOSITORY" \
+              --name production-manifest \
+              --dir prod-manifest/
+          echo "Production manifest downloaded successfully from run $RUN_ID."
+          else
+            echo "No successful production run found, will fall back to full build."
+          fi
+        # If no production manifest exists yet (first run), this step will
+        # fail gracefully and the next step falls back to a full build.
+        continue-on-error: true
+
+      - name: dbt seed
+        run: |
+          uv run dbt seed --target ci --profiles-dir ./profiles/local/ --vars "load_source_data: true"
+
+      # Builds only models that are new or modified relative to the prod
+      # manifest. --defer means unchanged models resolve against prod tables
+      # instead of being rebuilt from scratch.
+      - name: dbt build (slim CI)
+        run: uv run dbt build -s state:modified+ --target ci --profiles-dir ./profiles/local/ --defer --state ./prod-run-artifacts/

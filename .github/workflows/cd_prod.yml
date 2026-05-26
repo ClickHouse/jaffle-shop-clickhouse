@@ -1,0 +1,66 @@
+# =============================================================================
+# ILLUSTRATIVE EXAMPLE ONLY — NOT INTENDED TO RUN AS-IS
+# =============================================================================
+# This workflow demonstrates a CD pattern for dbt + ClickHouse. It runs a full
+# dbt build against production on every merge to main and uploads the resulting
+# manifest so that the CI workflow (ci.yml) can use it for slim CI comparisons.
+#
+# REQUIRED GITHUB SECRETS (Settings → Secrets and variables → Actions):
+#   DBT_HOST      — ClickHouse host (e.g. abc123.clickhouse.cloud)
+#   DBT_USER      — ClickHouse username
+#   DBT_PASSWORD  — ClickHouse password
+#
+# OPTIONAL SECRETS / VARIABLES:
+#   DBT_SCHEMA    — Target schema for prod runs (default: jaffle_shop_prod)
+#   DBT_CLUSTER   — ClickHouse cluster name, if applicable
+# =============================================================================
+
+name: dbt CD Job
+
+# Changed to workflow_dispatch so this file does not execute automatically.
+# To auto-run on merges to main, replace this block with:
+#   on:
+#     push:
+#       branches:
+#         - main
+on:
+  workflow_dispatch:
+
+jobs:
+  run_clickhouse:
+    name: dbt Deploy Prod ClickHouse
+    runs-on: ubuntu-latest
+
+    env:
+      DBT_HOST: ${{ secrets.DBT_HOST }}
+      DBT_USER: ${{ secrets.DBT_USER }}
+      DBT_PASSWORD: ${{ secrets.DBT_PASSWORD }}
+      DBT_SCHEMA: ${{ vars.DBT_SCHEMA || 'jaffle_shop_prod' }}
+
+    steps:
+      - uses: "actions/checkout@v4"
+      - uses: "actions/setup-python@v5"
+        with:
+          python-version: "3.12"
+      - name: Install uv
+        run: python3 -m pip install uv
+      - name: Install python dependencies
+        run: uv pip install -r requirements.txt --system
+      - name: Install dbt-clickhouse
+        run: uv pip install dbt-clickhouse
+      - name: Install dbt package dependencies
+        run: uv run dbt deps
+      - name: dbt seed
+        run: |
+          uv run dbt seed --target prod --profiles-dir ./profiles/local/ --vars "load_source_data: true"
+      - name: dbt build
+        run: uv run dbt build --target prod --profiles-dir ./profiles/local/
+
+      # The uploaded manifest is downloaded by ci.yml to enable slim CI:
+      # only models modified relative to this artifact will be rebuilt on PRs.
+      - name: Upload production manifest
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-manifest
+          path: target/manifest.json
+          retention-days: 90
