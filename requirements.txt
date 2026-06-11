@@ -16,7 +16,7 @@ filelock==3.13.4
     # via virtualenv
 identify==2.5.35
     # via pre-commit
-idna==3.6
+idna==3.15
     # via requests
 jafgen==0.4.12
     # via -r requirements.in
@@ -50,7 +50,7 @@ typer==0.12.3
     # via jafgen
 typing-extensions==4.11.0
     # via typer
-urllib3==2.2.1
+urllib3==2.7.0
     # via requests
 virtualenv==20.25.1
     # via pre-commit
