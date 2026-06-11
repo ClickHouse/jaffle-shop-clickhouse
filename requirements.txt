@@ -16,7 +16,7 @@ filelock==3.25.2
     # via virtualenv
 identify==2.5.35
     # via pre-commit
-idna==3.6
+idna==3.15
     # via requests
 jafgen==0.4.12
     # via -r requirements.in
@@ -32,13 +32,13 @@ platformdirs==4.2.0
     # via virtualenv
 pre-commit==3.7.0
     # via -r requirements.in
-pygments==2.17.2
+pygments==2.20.0
     # via rich
 python-dateutil==2.9.0.post0
     # via faker
 pyyaml==6.0.1
     # via pre-commit
-requests==2.31.0
+requests==2.33.0
     # via -r requirements.in
 rich==13.7.1
     # via typer
@@ -50,7 +50,7 @@ typer==0.12.3
     # via jafgen
 typing-extensions==4.11.0
     # via typer
-urllib3==2.2.1
+urllib3==2.7.0
     # via requests
 virtualenv==20.36.1
     # via pre-commit
