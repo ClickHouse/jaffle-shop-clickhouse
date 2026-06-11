@@ -12,7 +12,7 @@ distlib==0.3.8
     # via virtualenv
 faker==24.8.0
     # via jafgen
-filelock==3.13.4
+filelock==3.20.3
     # via virtualenv
 identify==2.5.35
     # via pre-commit
