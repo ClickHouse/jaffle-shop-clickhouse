@@ -1,0 +1,36 @@
+default:
+  target: dev
+  outputs:
+    dev:
+      type: clickhouse
+      schema: "{{env_var('DBT_SCHEMA', 'jaffle_shop_dev')}}"
+      host: "{{env_var('DBT_HOST', 'localhost')}}"
+      port: "{{env_var('DBT_HOST', 9000)}}"
+      user: "{{env_var('DBT_USER', 'default')}}"
+      password: "{{env_var('DBT_PASSWORD', '')}}"
+      cluster: "{{env_var('DBT_CLUSTER', '')}}"
+      keepalives_idle: 0
+      search_path: default
+      sslmode: disable
+    ci:
+      type: clickhouse
+      schema: "{{env_var('DBT_SCHEMA', 'jaffle_shop_ci')}}"
+      host: "{{env_var('DBT_HOST', 'localhost')}}"
+      port: "{{env_var('DBT_HOST', 9000)}}"
+      user: "{{env_var('DBT_USER', 'default')}}"
+      password: "{{env_var('DBT_PASSWORD', '')}}"
+      cluster: "{{env_var('DBT_CLUSTER', '')}}"
+      keepalives_idle: 0
+      search_path: default
+      sslmode: disable
+    prod:
+      type: clickhouse
+      schema: "{{env_var('DBT_SCHEMA', 'jaffle_shop_prod')}}"
+      host: "{{env_var('DBT_HOST', 'localhost')}}"
+      port: "{{env_var('DBT_HOST', 9000)}}"
+      user: "{{env_var('DBT_USER', 'default')}}"
+      password: "{{env_var('DBT_PASSWORD', '')}}"
+      cluster: "{{env_var('DBT_CLUSTER', '')}}"
+      keepalives_idle: 0
+      search_path: default
+      sslmode: disable
