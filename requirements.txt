@@ -12,7 +12,7 @@ distlib==0.3.8
     # via virtualenv
 faker==24.8.0
     # via jafgen
-filelock==3.13.4
+filelock==3.25.2
     # via virtualenv
 identify==2.5.35
     # via pre-commit
@@ -52,5 +52,5 @@ typing-extensions==4.11.0
     # via typer
 urllib3==2.7.0
     # via requests
-virtualenv==20.25.1
+virtualenv==20.36.1
     # via pre-commit
