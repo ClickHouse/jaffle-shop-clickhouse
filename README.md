@@ -4,6 +4,9 @@ This is a sandbox project for exploring the basic functionality and latest featu
 
 We made specific changes to make it work with Clickhouse. We also introduced specific documentation to help you kickstart your ClickHouse project.
 
+> [!NOTE]
+> **The `main` branch is compatible with [dbt Fusion](https://docs.getdbt.com/docs/fusion/about-fusion).** and dbt Core v1.12 and higher. It uses the latest Semantic Layer YAML spec, with semantic models embedded in model YAML files, `type: simple` metrics replacing measures, and `type_params` promoted to top-level keys. If you're looking for the legacy project using the legacy YAML semantic layer spec, check out the [`jaffle-shop-old`](../../tree/jaffle-shop-old) branch.
+
 You may still find some incompatibilities with Clickhouse. If you do, please open an issue in the GitHub repository. Also feel free to contribute:
 - Examples of interesting dbt resources that interact in an special way with ClickHouse.
 - Any good practice that you think should be explained.

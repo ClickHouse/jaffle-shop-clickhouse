@@ -2,7 +2,7 @@ config-version: 2
 
 name: "jaffle_shop"
 version: "3.0.0"
-require-dbt-version: ">=1.5.0"
+require-dbt-version: ">=1.12.0"
 
 profile: default # Put your profile here
 
@@ -14,9 +14,6 @@ macro-paths: ["macros"]
 clean-targets:
   - "target"
   - "dbt_packages"
-
-vars:
-  "dbt_date:time_zone": "America/Los_Angeles"
 
 seeds:
   jaffle_shop:
@@ -33,5 +30,6 @@ models:
       +materialized: view
     marts:
       +materialized: table
+
 flags:
   require_generic_test_arguments_property: true
