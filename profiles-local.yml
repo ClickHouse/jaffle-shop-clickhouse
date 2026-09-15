@@ -5,7 +5,7 @@ default:
       type: clickhouse
       schema: jaffle_shop
       host: localhost
-      port: 9000
+      port: 8123
       user: default
       password: ""
       cluster: default

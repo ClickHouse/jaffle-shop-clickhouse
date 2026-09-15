@@ -11,6 +11,9 @@ If you'd rather not use dbt Cloud, the [dbt Core](#-dbt-core-if-you-prefer-to-ru
 > [!NOTE]
 > **The `main` branch is compatible with [dbt Fusion](https://docs.getdbt.com/docs/fusion/about-fusion).** and dbt Core v1.12 and higher. It uses the latest Semantic Layer YAML spec, with semantic models embedded in model YAML files, `type: simple` metrics replacing measures, and `type_params` promoted to top-level keys. If you're looking for the legacy project using the legacy YAML semantic layer spec, check out the [`jaffle-shop-old`](../../tree/jaffle-shop-old) branch.
 
+> [!TIP]
+> Once the project builds, continue with the [dbt and ClickHouse guides](https://clickhouse.com/docs/integrations/dbt/guides). They use this project to walk through the ClickHouse-specific features of the adapter: table engines and sorting keys, incremental strategies, snapshots, materialized views and seeds.
+
 You may still find some incompatibilities with Clickhouse. If you do, please open an issue in the GitHub repository. Also feel free to contribute:
 - Examples of interesting dbt resources that interact in an special way with ClickHouse.
 - Any good practice that you think should be explained.
